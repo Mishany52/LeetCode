@@ -2,30 +2,56 @@
 public class Solution
 {
 
-    public string LongestCommonPrefix(string[] strs)
+    public bool IsValid(string s)
     {
-        string res = "";
-
-        for (int i = 0; i < strs[0].Length; i++)
+        char curr = s[0];
+        char expected = '\0';
+        bool res = false;
+        Stack<char> c = new Stack<char>();
+        if (s.Length % 2 == 1 ){
+            return res;
+        }
+        for (int i = 0; i < s.Length; i++)
         {
-            foreach (string s in strs)
-            {
-                if(i == s.Length || s[i] != strs[0][i]){
-                    return res;
-                }
-                
+            if (s[i] == '(' || s[i] == '{' || s[i] == '['){
+                c.Push(s[i]);
             }
-            res += strs[0][i];
+            else {
+                if(c.Count == 0){
+                    return false;
+                }
+                curr = s[i];
+                if (curr == ')')
+                {
+                    expected = '(';
+                }
+                if (curr == ']')
+                {
+                    expected = '[';
+                }
+                if (curr == '}')
+                {
+                    expected = '{';
+                }
+                if(expected == c.Pop()){
+                    res = true;
+                }
+                else{
+                    return false;
+                }
+            }
+        }
+        if (c.Count != 0){
+            return false;
         }
         return res;
-
     }
 
     public static void Main()
     {
-        string[] test = new string[3] {"c","acc","ccc"};
+        string test = new string("[[[]");
         Solution test1 = new Solution();
-        Console.WriteLine(test1.LongestCommonPrefix(test));
+        Console.WriteLine(test1.IsValid(test));
     }
 
 }
