@@ -1,78 +1,75 @@
-﻿using System;
+﻿using System.Reflection;
+using System.Runtime.Intrinsics.X86;
+using System.Collections;
+using System;
 using System.Numerics;
+// Definition for a Node.
+public class Node {
+    public int val;
+    public List<Node> children;
 
+    public Node()
+    {
+    }
+
+    public Node(int _val) {
+        val = _val;
+    }
+
+    public Node(int _val,List<Node> _children) {
+        val = _val;
+        children = _children;
+    }
+
+    void tree(Node node){
+        if(node.children.Count<0) return;
+        for (int i = 0; i < node.children.Count; i++)
+        {
+            tree(node.children[i]);
+        }
+    }
+
+    
+}
 public class Solution
 {
-    public int LargestPerimeter(int[] nums) {
-        int k = 3;
-        // var test = returnFirstK(nums,k);
-        // for (int i = k; i < nums.Length; i++)
-        // {
-            // if(nums[k-1] < nums[i]){
-            //     break;
-            // }
-        // }
-        reverse(nums,k-1);
-        return 0;
-    }
-
-    public void swap(int[] sequince, int j, int i){
-        (sequince[i], sequince[j]) = (sequince[j], sequince[i]);
-
-    }
-    public int[] k_permution_of_n(int[] nums, int k){
-        int len = nums.Length;
-        int i = k;
-        for (; i < len && nums[i] < nums[k - 1]; i++)
-        {
-        }
-        
-        if(i < len){
-            swap(nums, k-1, i);
-            
-        }
-        else{
-            reverse(nums,k-1);
-            int j = k - 2;
-            for (;j > 0 && nums[j] > nums[j+1]; j--)
-            { 
-            }
-            if(j<0) 
-                return new int[0];
-            else{
-                i = len - 1;
-                for (; i > j; )
-                {
-                    if (nums[i] > nums[j])
-                        break;
-                    i--;
-                }
-                swap(nums, i, j);
-                reverse(nums, j);
-            }
-        }
-        return nums.Take(k).ToArray();
-    }
-    public void reverse(int[] sequince, int index){
-        var shift = index + 1;
-        int len = sequince.Length;
-        for (int i = 0; i < (len-shift)/2; i++)
-        {
-            (sequince[shift+i], sequince[len-1-i]) = (sequince[len-1-i], sequince[shift+i]);
-        }
-    }
-    public static void Main()
+    public IList<int> Preorder(Node root)
     {
-        Solution test1 = new Solution();
-        int[] n = new[]{0,1,2,3,4};
-        int[] nums = n.Take(3).ToArray();
-        for (int i = 0;  n.Length!=0 ; i++)
-        {
-            Console.WriteLine(nums);
-            nums = test1.k_permution_of_n(n,3);
-            
-        }
+        List<int> output = new List<int>();
+        AddList(root, output);
+        return output;
+    }
 
+    private void AddList(Node cur, List<int> output)
+    {
+        if (cur == null) return;
+        output.Add(cur.val);
+        if (cur.children != null)
+        {
+            for (int i = 0; i < cur.children.Count(); i++)
+            {
+                AddList(cur.children[i], output);
+            }
+        }
+    }
+    public static void Main(string[] args)
+    {
+        
+        // Здесь вы можете создать свой пример дерева и вызвать метод Preorder
+        // Пример:
+        Node root = new Node(1, new List<Node>
+        {
+            new Node(3, new List<Node>
+            {
+                new Node(5),
+            }),
+            new Node(2, new List<Node> {new Node(6)}),
+            new Node(4)
+        });
+
+        Solution solution = new Solution();
+        IList<int> result = solution.Preorder(root);
+        Console.WriteLine(string.Join(", ", result));
     }
 
 }
