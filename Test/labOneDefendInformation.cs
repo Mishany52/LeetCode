@@ -2,11 +2,10 @@ using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 class Playfer
 {
-
+    string _lan = "";
     //Размеры биграммы, будут меняться в зависимости от языка кодирвания
     private int _rowSize;
     private int _colSize;
-
     private int _allSize;
     private string _keyWord = "";
     //Для проверки использованных букв в ключевом слове
@@ -19,6 +18,7 @@ class Playfer
     private char[,] _bigramma;
     public Playfer(string value = "eng")
     {
+        _lan = value;
         if (value == "eng")
         {
             _rowSize = 5;
@@ -26,27 +26,32 @@ class Playfer
         }
         else if (value == "ru")
         {
-            _rowSize = 8;
-            _colSize = 4;
+            _rowSize = 4;
+            _colSize = 8;
         }
         else
         {
             throw new ArgumentException("Неправильный параметр языка кодировки");
         }
-        _bigramma = new char[_colSize, _rowSize];
-        _allSize = _rowSize * _colSize + 1;
+
+        _bigramma = new char[_rowSize, _colSize];
+        _allSize = _rowSize * _colSize;
         _isLetter = new bool[_allSize];
+
         // Заполняем буквами и номерами
-        for (int i = 0; i < _allSize; i++)
+        for (int i = 0, j = 0; i <= _allSize; i++)
         {
             if (value == "eng")
             {
                 char letter = (char)('a' + i);
-                lettersMapOne.Add(letter, i);
-                lettersMapTwo.Add(i, letter);
+                if (letter == 'j') continue;
+                lettersMapOne.Add(letter, j);
+                lettersMapTwo.Add(j, letter);
+                j++;
             }
             else
             {
+                if (i == _allSize) continue;
                 char letter = (char)('а' + i);
                 lettersMapOne.Add(letter, i);
                 lettersMapTwo.Add(i, letter);
@@ -69,6 +74,7 @@ class Playfer
             char previousLet = ' ';
             string result = "";
             int numCurLet = ' ';
+            // удаление повторяющихся букв 
             for (int i = 0; i < value.Length; i++)
             {
                 if (value[i] != previousLet || previousLet == ' ')
@@ -108,8 +114,10 @@ class Playfer
         }
     }
 
+    //Вывод биграммы
     public void printBigramm()
     {
+        Console.WriteLine("Биграмма");
         for (int i = 0; i < _rowSize; i++)
         {
             for (int j = 0; j < _colSize; j++)
@@ -124,6 +132,7 @@ class Playfer
     public string coding(string str)
     {
         Dictionary<char, (int x, int y)> wordDict = new Dictionary<char, (int x, int y)>();
+        str = str.Replace(" ", "");
         string result = "";
         //Подготовка слова в кодированию (между двумя одиниковыми буквами x или не кратное слово, то добавляем x)  
         string preparingStr = "";
@@ -136,19 +145,33 @@ class Playfer
                 previousLet = str[i];
                 if (!wordDict.ContainsKey(str[i])) wordDict.Add(str[i], (0, 0));
             }
-            else
+            else if (_lan == "eng")
             {
                 preparingStr += 'x';
                 preparingStr += str[i];
                 if (!wordDict.ContainsKey('x')) wordDict.Add('x', (0, 0));
                 if (!wordDict.ContainsKey(str[i])) wordDict.Add(str[i], (0, 0));
-
+            }
+            else
+            {
+                preparingStr += 'э';
+                preparingStr += str[i];
+                if (!wordDict.ContainsKey('э')) wordDict.Add('э', (0, 0));
+                if (!wordDict.ContainsKey(str[i])) wordDict.Add(str[i], (0, 0));
             }
         }
         if (preparingStr.Length % 2 != 0)
         {
-            preparingStr += 'x';
-            if (!wordDict.ContainsKey('x')) wordDict.Add('x', (0, 0));
+            if (_lan == "eng")
+            {
+                preparingStr += 'x';
+                if (!wordDict.ContainsKey('x')) wordDict.Add('x', (0, 0));
+            }
+            else
+            {
+                preparingStr += 'э';
+                if (!wordDict.ContainsKey('э')) wordDict.Add('э', (0, 0));
+            }
         }
 
         findIndexesLetters(ref wordDict);
@@ -160,11 +183,16 @@ class Playfer
 
             if (iRowOne == iRowTwo)
             {
-                if (iColTwo == _colSize - 1)
+                if (iColTwo == _colSize - 1 && iColOne != _colSize - 1)
                 {
                     iColOne++;
                     iColTwo = 0;
 
+                }
+                else if (iColTwo != _colSize - 1 && iColOne == _colSize - 1)
+                {
+                    iColOne = 0;
+                    iColTwo++;
                 }
                 else
                 {
@@ -174,10 +202,15 @@ class Playfer
             }
             else if (iColOne == iColTwo)
             {
-                if (iRowTwo == _rowSize - 1)
+                if (iRowTwo == _rowSize - 1 && iRowTwo != _rowSize - 1)
                 {
                     iRowOne++;
                     iRowTwo = 0;
+                }
+                else if (iRowTwo != _rowSize - 1 && iRowTwo == _rowSize - 1)
+                {
+                    iRowOne = 0;
+                    iRowTwo++;
                 }
                 else
                 {
@@ -208,7 +241,6 @@ class Playfer
             if (!wordDict.ContainsKey(str[i])) wordDict.Add(str[i], (0, 0));
         }
 
-
         findIndexesLetters(ref wordDict);
 
         for (int i = 0, j = 1; j < str.Length; i += 2, j += 2)
@@ -218,11 +250,16 @@ class Playfer
 
             if (iRowOne == iRowTwo)
             {
-                if (iColTwo == 0)
+                if (iColTwo == 0 && iColOne != 0)
                 {
                     iColOne--;
                     iColTwo = _colSize - 1;
 
+                }
+                else if (iColTwo != 0 && iColOne == 0)
+                {
+                    iColOne = _colSize - 1;
+                    iColTwo--;
                 }
                 else
                 {
@@ -232,10 +269,15 @@ class Playfer
             }
             else if (iColOne == iColTwo)
             {
-                if (iRowTwo == 0)
+                if (iRowTwo == 0 && iRowOne != 0)
                 {
                     iRowOne--;
                     iRowTwo = _rowSize - 1;
+                }
+                else if (iRowTwo != 0 && iRowOne == 0)
+                {
+                    iRowOne = _rowSize - 1;
+                    iRowTwo--;
                 }
                 else
                 {
@@ -255,6 +297,7 @@ class Playfer
         }
         return result;
     }
+
     private void findIndexesLetters(ref Dictionary<char, (int x, int y)> wordDict)
     {
         for (int i = 0; i < _rowSize; i++)
@@ -274,12 +317,17 @@ class Test
 {
     static void Main(string[] args)
     {
-        Playfer test = new Playfer();
-        test.keyWord = "commander";
+        Playfer test = new Playfer("ru");
+        test.keyWord = "ключ";
+        string inText = "калинцев михаил иванович";
+        Console.WriteLine($"Ключевое слово после форматирования: {test.keyWord}");
         test.printBigramm();
-        string t = test.coding("student");
-        test.decoding(t);
-        // Console.WriteLine(test.keyWord);
+        Console.WriteLine($"Кодируемое слово: {inText}");
+        string t = test.coding(inText);
+        Console.WriteLine($"Результат кодирования: {t}");
+        Console.WriteLine($"Результат декодирования: {test.decoding(t)}");
+
+        
 
     }
 }
